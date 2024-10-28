@@ -2,25 +2,23 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import Image from "next/image"
+
+// Import UI components
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Mic, MicOff, Video, VideoOff, MessageSquare, Phone, Users } from "lucide-react"
-import Script from 'next/script'
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
 import { VideoDemoControls } from "@/components/video-demo-controls"
 
 // Update these constants
-const JAAS_DOMAIN = '8x8.vc'
-const JAAS_APP_ID = process.env.NEXT_PUBLIC_JAAS_APP_ID
-// Simplify room name generation
+const JITSI_DOMAIN = 'meet.jit.si'  // Change to public Jitsi server
+// Remove JAAS_APP_ID since we're not using it anymore
 const generateRoomName = (appointmentId: string) => 
-  `${JAAS_APP_ID}/appointment-${appointmentId}`
+  `telehealth-demo-${appointmentId}`  // Simplify room name
 
 declare global {
   interface Window {
@@ -88,6 +86,97 @@ export function VideoConferenceComponent() {
   // Get patient data based on the name
   const currentPatientData = getPatientData(patientName)
 
+  // Define initJitsi before useEffect
+  const initJitsi = async () => {
+    if (!jitsiContainerRef.current) return null;
+
+    try {
+      const options = {
+        roomName: ROOM_NAME,
+        width: '100%',
+        height: '100%',
+        parentNode: jitsiContainerRef.current,
+        userInfo: {
+          displayName: role === 'doctor' ? 'Dr. Smith' : patientName,
+          email: 'demo@example.com',
+          moderator: true,
+        },
+        configOverwrite: {
+          // Basic settings
+          prejoinPageEnabled: false,
+          disableDeepLinking: true,
+          disableModeratorIndicator: true,
+          enableClosePage: true,
+          disableProfile: true,
+          // Disable lobby
+          enableLobby: false,
+          membersOnly: false,
+          hideLobbyButton: true,
+          requireDisplayName: false,
+          // Disable moderation
+          disableModeratorIndicator: true,
+          disableRemoteMute: true,
+          disableFocus: true,
+          // Room settings
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          resolution: 720,
+          constraints: {
+            video: {
+              height: {
+                ideal: 720,
+                max: 720,
+                min: 180
+              }
+            }
+          },
+          // Add these specific settings
+          lobby: {
+            autoKnock: false,
+            enableChat: false
+          },
+          security: {
+            enableLobby: false,
+            lobbyAllowsParticipants: true,
+            requireModeration: false,
+            moderatorEmail: 'demo@example.com'
+          },
+          // Connection settings
+          websocket: 'wss://meet.jit.si/xmpp-websocket',
+          bosh: 'https://meet.jit.si/http-bind',
+          websocketKeepAliveUrl: 'https://meet.jit.si/ping',
+          openBridgeChannel: 'websocket',
+          clientNode: 'http://jitsi.org/jitsimeet',
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'fullscreen',
+            'fodeviceselection', 'hangup', 'settings'
+          ],
+          SETTINGS_SECTIONS: ['devices', 'language'],
+          SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+          HIDE_INVITE_MORE_HEADER: true,
+          DISABLE_FOCUS_INDICATOR: true,
+          DEFAULT_REMOTE_DISPLAY_NAME: role === 'doctor' ? patientName : 'Dr. Smith',
+          DISABLE_VIDEO_BACKGROUND: true,
+          MOBILE_APP_PROMO: false,
+          DISABLE_LOBBY_UI: true,
+          DISABLE_RINGING: true,
+          SETTINGS_SECTIONS: ['devices'],
+          RECENT_LIST_ENABLED: false,
+          ENABLE_LOBBY_CHAT: false,
+        },
+      }
+
+      return new window.JitsiMeetExternalAPI(JITSI_DOMAIN, options)
+    } catch (error) {
+      console.error('Failed to initialize Jitsi:', error)
+      return null
+    }
+  }
+
+  // Use useEffect after initJitsi is defined
   useEffect(() => {
     let mounted = true;
     let api: any = null;
@@ -97,7 +186,7 @@ export function VideoConferenceComponent() {
         if (!window.JitsiMeetExternalAPI) {
           await new Promise<void>((resolve, reject) => {
             const script = document.createElement('script')
-            script.src = `https://${JAAS_DOMAIN}/${JAAS_APP_ID}/external_api.js`
+            script.src = 'https://meet.jit.si/external_api.js'
             script.async = true
             script.onload = () => resolve()
             script.onerror = (error) => reject(error)
@@ -121,65 +210,10 @@ export function VideoConferenceComponent() {
       if (api) {
         api.dispose()
       }
-      // Clean up any existing iframes
       const iframes = document.querySelectorAll('iframe');
       iframes.forEach(iframe => iframe.remove());
     }
-  }, [])
-
-  const initJitsi = async () => {
-    if (!jitsiContainerRef.current) return null;
-
-    try {
-      const options = {
-        roomName: ROOM_NAME,
-        width: '100%',
-        height: '100%',
-        parentNode: jitsiContainerRef.current,
-        userInfo: {
-          displayName: role === 'doctor' ? 'Dr. Smith' : patientName,
-        },
-        configOverwrite: {
-          startWithAudioMuted: isMuted,
-          startWithVideoMuted: isVideoOff,
-          prejoinPageEnabled: false,
-          disableDeepLinking: true,
-          disableModeratorIndicator: true,
-          enableLobby: false,
-          enableClosePage: true,
-          disableProfile: true,
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'profile',
-            'settings', 'raisehand', 'videoquality', 'filmstrip',
-            'tileview', 'select-background', 'help'
-          ],
-          DEFAULT_REMOTE_DISPLAY_NAME: role === 'doctor' ? patientName : 'Dr. Smith',
-          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-          HIDE_INVITE_MORE_HEADER: true,
-        },
-      }
-
-      const api = new window.JitsiMeetExternalAPI(JAAS_DOMAIN, options)
-      
-      // Add message listener
-      api.addEventListeners({
-        videoMuteStatusChanged: (data: { muted: boolean }) => setIsVideoOff(data.muted),
-        audioMuteStatusChanged: (data: { muted: boolean }) => setIsMuted(data.muted),
-        participantLeft: handleParticipantLeft,
-        participantJoined: handleParticipantJoined,
-        readyToClose: handleReadyToClose,
-        endpointTextMessageReceived: handleIncomingMessage,
-      })
-
-      return api
-    } catch (error) {
-      console.error('Failed to initialize Jitsi:', error)
-      return null
-    }
-  }
+  }, []) // Remove initJitsi from dependencies
 
   const handleParticipantJoined = (participant: { id: string; displayName: string }) => {
     console.log('Participant joined:', participant)
@@ -397,6 +431,21 @@ export function VideoConferenceComponent() {
             patientName={patientName}
             onLaunchPatientView={launchPatientView}
           />
+        )}
+
+        {/* Add credit for patient view */}
+        {role === 'patient' && (
+          <div className="fixed bottom-4 right-4 text-xs text-muted-foreground">
+            made with ❤️ by{' '}
+            <a 
+              href="https://github.com/harrism04" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              harrism04
+            </a>
+          </div>
         )}
       </div>
     </div>
