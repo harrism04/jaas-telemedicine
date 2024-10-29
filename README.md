@@ -5,13 +5,16 @@ A telehealth platform built with Next.js and JaaS (Jitsi as a Service) for video
 ## Screenshots
 
 ### Dashboard
-![Dashboard View](/docs/dashboard.png)
+![Dashboard View](public/docs/dashboard.png)
+*Main dashboard showing appointments and waiting room*
 
 ### Doctor's Interface
-![Doctor's View](/docs/doctor-view.png)
+![Doctor's View](public/docs/doctor-view.png)
+*Doctor's video consultation interface with patient information*
 
 ### Patient's Interface
-![Patient's View](/docs/patient-view.png)
+![Patient's View](public/docs/patient-view.png)
+*Patient's simplified video consultation interface*
 
 ## Features
 
@@ -29,6 +32,7 @@ Before you begin, ensure you have:
 - A JaaS account with:
   - App ID
   - Private Key
+  > Don't have JaaS credentials? [Sign up here](https://jaas.8x8.vc/signup?jaas=true)
 - npm or yarn package manager
 
 ## Environment Setup
@@ -48,17 +52,21 @@ your-private-key-content
 
 ## Docker Setup
 
-You can run this application using Docker:
-
-1. Build the Docker image:
+### Using Docker Compose (Recommended)
 ```bash
-docker build -t telehealth-demo .
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Run in detached mode
+docker-compose up -d
 ```
 
-2. Create a `.env.local` file with your JaaS credentials (see Environment Setup section)
-
-3. Run the container:
+### Using Docker directly
 ```bash
+# Build the image
+docker build -t telehealth-demo .
+
+# Run the container
 docker run -p 3000:3000 --env-file .env.local telehealth-demo
 ```
 
@@ -110,6 +118,7 @@ The application will be available at `http://localhost:3000`
 │   └── ...             # Feature components
 ├── lib/                # Utilities and helpers
 └── public/             # Static assets
+    └── docs/           # Documentation images
 ```
 
 ## Contributing

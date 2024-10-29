@@ -6,49 +6,102 @@
 - Docker Desktop
 - Git
 - A JaaS account with API credentials
+  > Don't have JaaS credentials? [Sign up here](https://jaas.8x8.vc/signup?jaas=true)
 
 ### Setup Steps
 
-1. Clone the repository
+1. Fork and Clone
 ```bash
+# Fork this repository first, then clone your fork
 git clone https://github.com/yourusername/telehealth-demo.git
 cd telehealth-demo
 ```
 
-2. Create your environment file
+2. Environment Setup
 ```bash
+# Copy the example env file
 cp .env.example .env.local
-```
 
-3. Edit `.env.local` with your JaaS credentials:
-```env
+# Edit .env.local with your JaaS credentials
 NEXT_PUBLIC_JAAS_APP_ID=your-jaas-app-id
-JAAS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
-your-private-key-content
------END PRIVATE KEY-----"
+JAAS_PRIVATE_KEY="your-private-key"
 ```
 
-4. Build and run with Docker
+3. Development Options
+
+Using Docker (Recommended):
 ```bash
-# Build the image
-docker build -t telehealth-demo .
+# Build and run with Docker Compose
+docker-compose up --build
 
-# Run the container
-docker run -p 3000:3000 --env-file .env.local telehealth-demo
+# Or run in detached mode
+docker-compose up -d
 ```
 
-5. Access the application at `http://localhost:3000`
-
-## Development with Hot Reload
-
-For development with hot reload:
+Using Local Node.js:
 ```bash
-docker run -p 3000:3000 --env-file .env.local -v $(pwd):/app telehealth-demo npm run dev
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
 ```
 
-## Troubleshooting
+4. Access the application at `http://localhost:3000`
 
-If you encounter any issues:
-1. Make sure Docker is running
-2. Verify your JaaS credentials are correct
-3. Check the console logs for any errors 
+## Project Structure
+```
+├── app/                  # Next.js app router
+│   ├── page.tsx         # Home page
+│   ├── schedule/        # Schedule page
+│   ├── patients/        # Patients page
+│   └── settings/        # Settings page
+├── components/          # React components
+│   ├── ui/             # UI components from shadcn
+│   └── ...             # Feature components
+├── lib/                # Utilities
+│   └── jitsi-utils.ts  # JaaS integration
+└── public/             # Static assets
+    └── docs/           # Documentation images
+```
+
+## Making Changes
+
+1. Create a new branch:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+2. Make your changes and test thoroughly
+
+3. Commit your changes:
+```bash
+git add .
+git commit -m "feat: description of your changes"
+```
+
+4. Push to your fork:
+```bash
+git push origin feature/your-feature-name
+```
+
+5. Open a Pull Request
+
+## Pull Request Guidelines
+
+- Follow existing code style
+- Include clear description of changes
+- Update documentation if needed
+- Test your changes thoroughly
+- Keep PRs focused on a single change
+
+## Need Help?
+
+Feel free to open an issue for:
+- Bug reports
+- Feature requests
+- Questions about the codebase
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
