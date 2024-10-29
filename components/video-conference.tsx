@@ -15,10 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { VideoDemoControls } from "@/components/video-demo-controls"
 
 // Update these constants
-const JITSI_DOMAIN = 'meet.jit.si'  // Change to public Jitsi server
-// Remove JAAS_APP_ID since we're not using it anymore
-const generateRoomName = (appointmentId: string) => 
-  `telehealth-demo-${appointmentId}`  // Simplify room name
+const JITSI_DOMAIN = '8x8.vc'  // Change to JaaS server
+const JAAS_APP_ID = process.env.NEXT_PUBLIC_JAAS_APP_ID
+const generateRoomName = (appointmentId: string) => appointmentId  // Remove APP_ID prefix
 
 declare global {
   interface Window {
@@ -67,6 +66,9 @@ const PLACEHOLDER_MESSAGE = {
   isSystem: true
 }
 
+// Add import at the top
+import { generateJWT } from '@/lib/jitsi-utils'
+
 export function VideoConferenceComponent() {
   const router = useRouter()
   const [isMuted, setIsMuted] = useState(false)
@@ -91,35 +93,48 @@ export function VideoConferenceComponent() {
     if (!jitsiContainerRef.current) return null;
 
     try {
+      const jwt = generateJWT(ROOM_NAME, role === 'doctor')
+      console.log('Generated JWT:', jwt);
+      console.log('Room Name:', ROOM_NAME);
+      console.log('Role:', role);
+      
       const options = {
         roomName: ROOM_NAME,
         width: '100%',
         height: '100%',
         parentNode: jitsiContainerRef.current,
-        userInfo: {
-          displayName: role === 'doctor' ? 'Dr. Smith' : patientName,
-          email: 'demo@example.com',
-          moderator: true,
-        },
+        jwt,
         configOverwrite: {
           // Basic settings
           prejoinPageEnabled: false,
           disableDeepLinking: true,
-          disableModeratorIndicator: true,
-          enableClosePage: true,
           disableProfile: true,
-          // Disable lobby
-          enableLobby: false,
-          membersOnly: false,
-          hideLobbyButton: true,
-          requireDisplayName: false,
-          // Disable moderation
-          disableModeratorIndicator: true,
-          disableRemoteMute: true,
-          disableFocus: true,
-          // Room settings
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
+
+          // Debug settings
+          testing: {
+            enableFirefoxSimulcast: false,
+            p2pTestMode: false
+          },
+          p2p: {
+            enabled: false
+          },
+          analytics: {
+            disabled: true
+          },
+          
+          // Connection settings
+          websocket: `wss://8x8.vc/${JAAS_APP_ID}/xmpp-websocket`,
+          bosh: `https://8x8.vc/${JAAS_APP_ID}/http-bind`,
+
+          // Disable all security features
+          security: {
+            enableInsecureRoomNameWarning: false,
+            roomPasswordNumberOfDigits: 0,
+            enableLobby: false,
+            requireDisplayName: false
+          },
+
+          // Other settings
           resolution: 720,
           constraints: {
             video: {
@@ -129,24 +144,7 @@ export function VideoConferenceComponent() {
                 min: 180
               }
             }
-          },
-          // Add these specific settings
-          lobby: {
-            autoKnock: false,
-            enableChat: false
-          },
-          security: {
-            enableLobby: false,
-            lobbyAllowsParticipants: true,
-            requireModeration: false,
-            moderatorEmail: 'demo@example.com'
-          },
-          // Connection settings
-          websocket: 'wss://meet.jit.si/xmpp-websocket',
-          bosh: 'https://meet.jit.si/http-bind',
-          websocketKeepAliveUrl: 'https://meet.jit.si/ping',
-          openBridgeChannel: 'websocket',
-          clientNode: 'http://jitsi.org/jitsimeet',
+          }
         },
         interfaceConfigOverwrite: {
           TOOLBAR_BUTTONS: [
@@ -156,20 +154,58 @@ export function VideoConferenceComponent() {
           SETTINGS_SECTIONS: ['devices', 'language'],
           SHOW_PROMOTIONAL_CLOSE_PAGE: false,
           DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+          DEFAULT_REMOTE_DISPLAY_NAME: role === 'doctor' ? patientName : 'Dr. Smith',
+          MOBILE_APP_PROMO: false,
           HIDE_INVITE_MORE_HEADER: true,
           DISABLE_FOCUS_INDICATOR: true,
-          DEFAULT_REMOTE_DISPLAY_NAME: role === 'doctor' ? patientName : 'Dr. Smith',
           DISABLE_VIDEO_BACKGROUND: true,
-          MOBILE_APP_PROMO: false,
-          DISABLE_LOBBY_UI: true,
+          DISABLE_TRANSCRIPTION_SUBTITLES: true,
           DISABLE_RINGING: true,
-          SETTINGS_SECTIONS: ['devices'],
-          RECENT_LIST_ENABLED: false,
-          ENABLE_LOBBY_CHAT: false,
+          DISABLE_LOBBY_UI: true,
+          RECENT_LIST_ENABLED: false
         },
+        onload: () => {
+          console.log('Jitsi iframe loaded');
+        }
       }
 
-      return new window.JitsiMeetExternalAPI(JITSI_DOMAIN, options)
+      // Log options without parentNode
+      const loggableOptions = {
+        ...options,
+        parentNode: 'DOM_ELEMENT_REF' // Replace DOM reference with string for logging
+      };
+      console.log('Initializing Jitsi with options:', loggableOptions);
+
+      try {
+        const api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, options);
+
+        // Add event listeners for debugging
+        api.addEventListeners({
+          videoConferenceJoined: (data: any) => {
+            console.log('Joined conference:', data);
+          },
+          participantJoined: (data: any) => {
+            console.log('Participant joined:', data);
+          },
+          participantLeft: (data: any) => {
+            console.log('Participant left:', data);
+          },
+          videoConferenceLeft: (data: any) => {
+            console.log('Left conference:', data);
+          },
+          readyToClose: () => {
+            console.log('Ready to close');
+          },
+          errorOccurred: (error: any) => {
+            console.error('Jitsi error:', error);
+          }
+        });
+
+        return api;
+      } catch (initError) {
+        console.error('Failed to initialize JitsiMeetExternalAPI:', initError);
+        return null;
+      }
     } catch (error) {
       console.error('Failed to initialize Jitsi:', error)
       return null
@@ -183,20 +219,36 @@ export function VideoConferenceComponent() {
 
     const loadJitsiScript = async () => {
       try {
+        console.log('Loading Jitsi script...');
         if (!window.JitsiMeetExternalAPI) {
+          console.log('JitsiMeetExternalAPI not found, loading script...');
           await new Promise<void>((resolve, reject) => {
             const script = document.createElement('script')
-            script.src = 'https://meet.jit.si/external_api.js'
+            const scriptUrl = `https://8x8.vc/${JAAS_APP_ID}/external_api.js`;
+            console.log('Loading script from:', scriptUrl);
+            script.src = scriptUrl
             script.async = true
-            script.onload = () => resolve()
-            script.onerror = (error) => reject(error)
+            script.onload = () => {
+              console.log('Jitsi script loaded successfully');
+              resolve()
+            }
+            script.onerror = (error) => {
+              console.error('Failed to load Jitsi script:', error)
+              reject(error)
+            }
             document.body.appendChild(script)
           })
+        } else {
+          console.log('JitsiMeetExternalAPI already loaded');
         }
 
         if (mounted && !api) {
+          console.log('Initializing Jitsi API...');
           api = await initJitsi()
-          if (api) setJitsiApi(api)
+          if (api) {
+            console.log('Jitsi API initialized successfully');
+            setJitsiApi(api)
+          }
         }
       } catch (error) {
         console.error('Failed to load Jitsi script:', error)
