@@ -1,37 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 interface JaaSFeatures {
-  prejoinPageEnabled: boolean;
-  disableDeepLinking: boolean;
-  disableProfile: boolean;
-  enableFirefoxSimulcast: boolean;
-  p2pEnabled: boolean;
-  analyticsEnabled: boolean;
-  enableLobby: boolean;
-  requireDisplayName: boolean;
   startWithAudioMuted: boolean;
   startWithVideoMuted: boolean;
 }
 
 export default function SettingsPage() {
+  const { toast } = useToast()
   const [features, setFeatures] = useState<JaaSFeatures>({
-    prejoinPageEnabled: false,
-    disableDeepLinking: true,
-    disableProfile: true,
-    enableFirefoxSimulcast: false,
-    p2pEnabled: false,
-    analyticsEnabled: false,
-    enableLobby: false,
-    requireDisplayName: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
   })
+
+  // Load saved settings on mount
+  useEffect(() => {
+    const savedFeatures = localStorage.getItem('jaasFeatures')
+    if (savedFeatures) {
+      setFeatures(JSON.parse(savedFeatures))
+    }
+  }, [])
 
   const handleFeatureToggle = (feature: keyof JaaSFeatures) => {
     setFeatures(prev => ({
@@ -43,7 +38,10 @@ export default function SettingsPage() {
   const saveSettings = () => {
     // Save to localStorage for now
     localStorage.setItem('jaasFeatures', JSON.stringify(features))
-    // You could also save to a database in a real application
+    toast({
+      title: "Settings saved",
+      description: "Your video conference settings have been updated.",
+    })
   }
 
   return (
@@ -75,6 +73,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      <Toaster />
     </div>
   )
 } 

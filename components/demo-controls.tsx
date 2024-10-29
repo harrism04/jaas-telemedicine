@@ -2,7 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface DemoControlsProps {
   appointmentId: string | number | null;
@@ -19,7 +25,7 @@ export function DemoControls({
   onJoinAsDoctor,
   onLaunchPatientView 
 }: DemoControlsProps) {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   if (!appointmentId) return null;
 
@@ -27,36 +33,23 @@ export function DemoControls({
     if (appointmentId && onJoinAsDoctor) {
       window.open('', 'doctor_view', 'width=1200,height=800')
       onJoinAsDoctor(Number(appointmentId))
+      setIsOpen(false)
     }
   }
 
-  if (isMinimized) {
-    return (
-      <Button
-        onClick={() => setIsMinimized(false)}
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-primary hover:bg-primary/90"
-      >
-        Show Demo Controls
-      </Button>
-    );
+  const handlePatientClick = () => {
+    if (onLaunchPatientView) {
+      onLaunchPatientView()
+      setIsOpen(false)
+    }
   }
 
   return (
-    <Card className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[425px] shadow-lg border border-primary/20">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-semibold text-primary">Demo Controls</CardTitle>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setIsMinimized(true)}
-            className="h-8 px-2 text-muted-foreground"
-          >
-            Minimize
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-primary">Demo Controls</DialogTitle>
+        </DialogHeader>
         <div className="flex flex-col gap-3">
           {mode === 'dashboard' ? (
             <>
@@ -73,7 +66,7 @@ export function DemoControls({
           ) : (
             <>
               <Button 
-                onClick={onLaunchPatientView}
+                onClick={handlePatientClick}
                 className="bg-primary hover:bg-primary/90 w-full"
               >
                 Launch Patient View
@@ -84,7 +77,7 @@ export function DemoControls({
             </>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

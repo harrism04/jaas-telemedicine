@@ -27,6 +27,7 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  Home,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -108,6 +109,7 @@ interface SidebarContentProps {
 
 function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse, onNavigate }: SidebarContentProps) {
   const navigationItems = [
+    { icon: Home, label: 'Home', path: '/', enabled: true },
     { icon: Calendar, label: 'Schedule', path: '/schedule', enabled: true },
     { icon: Users, label: 'Patients', path: '/patients', enabled: true },
     { icon: MessageSquare, label: 'Messages', path: '/messages', enabled: false },
@@ -138,16 +140,18 @@ function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse, on
 
         {/* Header with Logo */}
         <div className="p-4 border-b border-border">
-          <Link href="/schedule" className="flex items-center">
+          <div 
+            className="flex items-center cursor-pointer" 
+            onClick={() => onNavigate('/')}
+          >
             <Image
               src="/logo.svg"
               alt="Clinic Logo"
               width={40}
               height={40}
-              className="cursor-pointer"
             />
-            {!isCollapsed && <h2 className="font-bold text-primary ml-2">Harris' Clinic Portal</h2>}
-          </Link>
+            {!isCollapsed && <h2 className="font-bold text-primary ml-2">ACME Clinic</h2>}
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -175,7 +179,7 @@ function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse, on
                   <Button 
                     variant="ghost" 
                     className={`w-full justify-${isCollapsed ? 'center' : 'start'} relative
-                      ${!item.enabled && 'pointer-events-none'}`}
+                      ${!item.enabled && 'opacity-50 pointer-events-none'}`}
                     onClick={() => item.enabled && onNavigate(item.path)}
                   >
                     <item.icon className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
@@ -203,7 +207,7 @@ function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse, on
             <TooltipTrigger asChild>
               <Button 
                 variant="ghost" 
-                className={`w-full justify-${isCollapsed ? 'center' : 'start'} pointer-events-none`}
+                className={`w-full justify-${isCollapsed ? 'center' : 'start'} opacity-50 pointer-events-none`}
               >
                 <LogOut className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
                 {!isCollapsed && 'Logout'}

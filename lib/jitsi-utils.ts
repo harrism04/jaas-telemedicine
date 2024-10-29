@@ -101,9 +101,10 @@ const decodeJWT = (token: string) => {
   }
 };
 
-export const generateJWT = (roomName: string, isDoctor: boolean): string => {
+export const generateJWT = (roomName: string, isDoctor: boolean, patientName?: string): string => {
   console.log('Generating JWT for room:', roomName);
   console.log('Is doctor:', isDoctor);
+  console.log('Patient name:', patientName);
   
   const APP_ID = process.env.NEXT_PUBLIC_JAAS_APP_ID
   let PRIVATE_KEY = process.env.JAAS_PRIVATE_KEY
@@ -137,7 +138,7 @@ export const generateJWT = (roomName: string, isDoctor: boolean): string => {
       context: {
         user: {
           id: userId,
-          name: isDoctor ? 'Dr. Smith' : 'Patient',
+          name: isDoctor ? 'Dr. Smith' : patientName || 'Patient',
           email: 'demo@example.com',
           moderator: true,
           'hidden-from-recorder': false

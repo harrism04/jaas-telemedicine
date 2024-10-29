@@ -38,38 +38,134 @@ interface Patient {
 const patients: Patient[] = [
   {
     id: 1,
-    name: "John Smith",
+    name: "Berus Wayne",
     age: 45,
     gender: "Male",
-    email: "john.smith@email.com",
+    email: "berus.wayne@email.com",
     phone: "(555) 123-4567",
-    address: "123 Main St, Anytown, ST 12345",
+    address: "1007 Mountain Drive, Gotham City",
     lastVisit: "2024-01-15",
     nextAppointment: "2024-02-01",
     status: "Active",
     medicalHistory: {
-      conditions: ["Hypertension", "Type 2 Diabetes"],
+      conditions: ["Type 2 Diabetes", "Hypertension"],
       allergies: ["Penicillin"],
-      medications: ["Lisinopril 10mg", "Metformin 500mg"]
+      medications: ["Metformin 1000mg", "Glipizide 5mg"]
     },
     visitHistory: [
       {
         date: "2024-01-15",
         type: "Virtual",
-        reason: "Follow-up",
-        diagnosis: "Well-controlled hypertension",
+        reason: "Follow-up: Diabetes Management",
+        diagnosis: "Well-controlled diabetes",
         prescription: "Continue current medications"
-      },
-      {
-        date: "2023-12-01",
-        type: "In-Person",
-        reason: "Annual physical",
-        diagnosis: "Routine examination",
-        prescription: "No changes to medications"
       }
     ]
   },
-  // Add more mock patients here
+  {
+    id: 2,
+    name: "Tom Kurus",
+    age: 58,
+    gender: "Male",
+    email: "tom.kurus@email.com",
+    phone: "(555) 234-5678",
+    address: "456 Steel Avenue, Metropolis",
+    lastVisit: "2024-01-20",
+    nextAppointment: "2024-01-30",
+    status: "Active",
+    medicalHistory: {
+      conditions: ["Hypertension", "High Cholesterol"],
+      allergies: ["Sulfa drugs"],
+      medications: ["Lisinopril 20mg", "Amlodipine 5mg"]
+    },
+    visitHistory: [
+      {
+        date: "2024-01-20",
+        type: "In-Person",
+        reason: "Urgent: High Blood Pressure",
+        diagnosis: "Uncontrolled hypertension",
+        prescription: "Increased Lisinopril dosage"
+      }
+    ]
+  },
+  {
+    id: 3,
+    name: "Mydin Johnson",
+    age: 35,
+    gender: "Male",
+    email: "mydin.johnson@email.com",
+    phone: "(555) 345-6789",
+    address: "789 Health Street, Central City",
+    lastVisit: "2023-12-15",
+    nextAppointment: "2024-01-30",
+    status: "Active",
+    medicalHistory: {
+      conditions: [],
+      allergies: [],
+      medications: []
+    },
+    visitHistory: [
+      {
+        date: "2023-12-15",
+        type: "In-Person",
+        reason: "Annual Check-up",
+        diagnosis: "Healthy, no concerns",
+        prescription: "None"
+      }
+    ]
+  },
+  {
+    id: 4,
+    name: "Leonardo DiKopi-o",
+    age: 52,
+    gender: "Male",
+    email: "leonardo.dikopi@email.com",
+    phone: "(555) 456-7890",
+    address: "321 Star Boulevard, Hollywood",
+    lastVisit: "2024-01-10",
+    nextAppointment: "2024-01-30",
+    status: "Active",
+    medicalHistory: {
+      conditions: ["High Cholesterol", "Mild Hypertension"],
+      allergies: ["Ibuprofen"],
+      medications: ["Atorvastatin 40mg", "Aspirin 81mg"]
+    },
+    visitHistory: [
+      {
+        date: "2024-01-10",
+        type: "Virtual",
+        reason: "Follow-up: Medication Review",
+        diagnosis: "Stable condition",
+        prescription: "Continue current medications"
+      }
+    ]
+  },
+  {
+    id: 5,
+    name: "Emily Paris",
+    age: 29,
+    gender: "Female",
+    email: "emily.paris@email.com",
+    phone: "(555) 567-8901",
+    address: "567 Fashion Avenue, Paris District",
+    lastVisit: "2024-01-25",
+    nextAppointment: "2024-01-30",
+    status: "Active",
+    medicalHistory: {
+      conditions: [],
+      allergies: ["Latex"],
+      medications: []
+    },
+    visitHistory: [
+      {
+        date: "2024-01-25",
+        type: "In-Person",
+        reason: "New Patient Consultation",
+        diagnosis: "Initial assessment",
+        prescription: "None"
+      }
+    ]
+  }
 ]
 
 export default function PatientsPage() {

@@ -2,6 +2,17 @@
 
 A telehealth platform built with Next.js and JaaS (Jitsi as a Service) for video conferencing.
 
+## Screenshots
+
+### Dashboard
+![Dashboard View](/docs/dashboard.png)
+
+### Doctor's Interface
+![Doctor's View](/docs/doctor-view.png)
+
+### Patient's Interface
+![Patient's View](/docs/patient-view.png)
+
 ## Features
 
 - Real-time video consultations

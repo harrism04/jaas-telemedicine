@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import { Users } from "lucide-react"
 
 // Import UI components
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DemoControls } from "@/components/demo-controls"
 
 // Update these constants
 const JITSI_DOMAIN = '8x8.vc'  // Change to JaaS server
@@ -93,7 +93,7 @@ export function VideoConferenceComponent() {
     if (!jitsiContainerRef.current) return null;
 
     try {
-      const jwt = generateJWT(ROOM_NAME, role === 'doctor')
+      const jwt = generateJWT(ROOM_NAME, role === 'doctor', patientName)
       console.log('Generated JWT:', jwt);
       console.log('Room Name:', ROOM_NAME);
       console.log('Role:', role);
@@ -145,7 +145,42 @@ export function VideoConferenceComponent() {
                 min: 180
               }
             }
-          }
+          },
+          virtualBackgrounds: [
+            {
+              // Default blur option
+              id: 'blur',
+              type: 'blur',
+              label: 'Blur'
+            },
+            {
+              id: 'office',
+              type: 'image',
+              src: `${window.location.origin}/backgrounds/office.jpg`,
+              label: 'Office'
+            },
+            {
+              id: 'library',
+              type: 'image',
+              src: `${window.location.origin}/backgrounds/library.jpg`,
+              label: 'Library'
+            },
+            {
+              id: 'nature',
+              type: 'image',
+              src: `${window.location.origin}/backgrounds/nature.jpg`,
+              label: 'Nature'
+            },
+            {
+              id: 'gradient',
+              type: 'image',
+              src: `${window.location.origin}/backgrounds/gradient.jpg`,
+              label: 'Gradient'
+            }
+          ],
+          // Enable virtual background feature
+          backgroundAlpha: 1,
+          enableVirtualBackground: true,
         },
         interfaceConfigOverwrite: {
           TOOLBAR_BUTTONS: [
@@ -379,13 +414,24 @@ export function VideoConferenceComponent() {
                   <TabsContent value="info" className="flex-1 overflow-auto">
                     <Card className="h-full">
                       <CardHeader>
-                        <CardTitle>Patient Information</CardTitle>
+                        <div className="space-y-4">
+                          <CardTitle>Patient Information</CardTitle>
+                          {role === 'doctor' && (
+                            <Button
+                              onClick={launchPatientView}
+                              className="bg-primary hover:bg-primary/90 w-full"
+                            >
+                              <Users className="mr-2 h-4 w-4" />
+                              Launch Patient View
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
                       <CardContent>
-                        <dl className="space-y-4">
-                          <div>
-                            <dt className="font-semibold">Name</dt>
-                            <dd>{currentPatientData.name}</dd>
+                        <div className="grid gap-4">
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium leading-none">Name</p>
+                            <p className="text-sm text-muted-foreground">{currentPatientData.name}</p>
                           </div>
                           <div>
                             <dt className="font-semibold">Age</dt>
@@ -429,7 +475,7 @@ export function VideoConferenceComponent() {
                               </ul>
                             </dd>
                           </div>
-                        </dl>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -477,16 +523,6 @@ export function VideoConferenceComponent() {
           </div>
         </div>
 
-        {/* Add demo controls for doctor view */}
-        {role === 'doctor' && (
-          <DemoControls 
-            appointmentId={appointmentId}
-            mode="consultation"
-            patientName={patientName}
-            onLaunchPatientView={launchPatientView}
-          />
-        )}
-
         {/* Add credit for patient view */}
         {role === 'patient' && (
           <div className="fixed bottom-4 right-4 text-xs text-muted-foreground">
@@ -506,9 +542,45 @@ export function VideoConferenceComponent() {
   )
 }
 
-// Add at the top of your component
+// Update the getJaaSFeatures function
 const getJaaSFeatures = () => {
   if (typeof window === 'undefined') return {};
   const savedFeatures = localStorage.getItem('jaasFeatures');
-  return savedFeatures ? JSON.parse(savedFeatures) : {};
-}
+  if (!savedFeatures) return {};
+
+  // Parse saved settings
+  const settings = JSON.parse(savedFeatures);
+  
+  // Return settings in the format Jitsi expects
+  return {
+    // Always disable these features
+    prejoinPageEnabled: false,
+    enableLobby: false,
+
+    // Basic settings
+    disableDeepLinking: settings.disableDeepLinking,
+    disableProfile: settings.disableProfile,
+
+    // Testing settings
+    testing: {
+      enableFirefoxSimulcast: settings.enableFirefoxSimulcast
+    },
+
+    // P2P settings
+    p2p: {
+      enabled: settings.p2pEnabled
+    },
+
+    // Analytics settings
+    analytics: {
+      disabled: !settings.analyticsEnabled
+    },
+
+    // User settings
+    requireDisplayName: settings.requireDisplayName,
+
+    // Initial state settings
+    startWithAudioMuted: settings.startWithAudioMuted,
+    startWithVideoMuted: settings.startWithVideoMuted,
+  };
+};
