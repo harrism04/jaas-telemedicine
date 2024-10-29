@@ -214,6 +214,7 @@ export function ClinicDashboardComponent() {
       {/* Update the DemoControls usage */}
       <DemoControls 
         appointmentId={activeAppointment}
+        mode="dashboard"
         onJoinAsDoctor={joinAsDoctor}
       />
     </div>

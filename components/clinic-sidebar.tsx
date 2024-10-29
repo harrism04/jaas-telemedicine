@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 // Notification type
 interface Notification {
@@ -69,6 +70,7 @@ const stats = {
 export function ClinicSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(2)
+  const router = useRouter()
 
   return (
     <Sheet>
@@ -77,8 +79,11 @@ export function ClinicSidebar() {
           <Menu className="h-4 w-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0">
-        <SidebarContent unreadNotifications={unreadNotifications} />
+      <SheetContent className="w-64 p-0">
+        <SidebarContent 
+          unreadNotifications={unreadNotifications}
+          onNavigate={(path) => router.push(path)}
+        />
       </SheetContent>
 
       {/* Desktop sidebar */}
@@ -87,6 +92,7 @@ export function ClinicSidebar() {
           unreadNotifications={unreadNotifications} 
           isCollapsed={isCollapsed} 
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+          onNavigate={(path) => router.push(path)}
         />
       </div>
     </Sheet>
@@ -97,9 +103,20 @@ interface SidebarContentProps {
   unreadNotifications: number;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  onNavigate: (path: string) => void;
 }
 
-function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse }: SidebarContentProps) {
+function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse, onNavigate }: SidebarContentProps) {
+  const navigationItems = [
+    { icon: Calendar, label: 'Schedule', path: '/schedule', enabled: true },
+    { icon: Users, label: 'Patients', path: '/patients', enabled: true },
+    { icon: MessageSquare, label: 'Messages', path: '/messages', enabled: false },
+    { icon: FileText, label: 'Records', path: '/records', enabled: false },
+    { icon: BarChart, label: 'Analytics', path: '/analytics', enabled: false },
+    { icon: Bell, label: 'Notifications', path: '/notifications', badge: unreadNotifications, enabled: false },
+    { icon: Settings, label: 'Settings', path: '/settings', enabled: true },
+  ]
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-full bg-background relative">
@@ -121,7 +138,7 @@ function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse }: 
 
         {/* Header with Logo */}
         <div className="p-4 border-b border-border">
-          <Link href="/" className="flex items-center">
+          <Link href="/schedule" className="flex items-center">
             <Image
               src="/logo.svg"
               alt="Clinic Logo"
@@ -152,19 +169,14 @@ function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse }: 
         {/* Navigation */}
         <nav className="flex-1 p-2">
           <div className="space-y-1">
-            {[
-              { icon: Calendar, label: 'Schedule' },
-              { icon: Users, label: 'Patients' },
-              { icon: MessageSquare, label: 'Messages' },
-              { icon: FileText, label: 'Records' },
-              { icon: BarChart, label: 'Analytics' },
-              { icon: Bell, label: 'Notifications', badge: unreadNotifications },
-            ].map((item) => (
+            {navigationItems.map((item) => (
               <Tooltip key={item.label} delayDuration={0}>
                 <TooltipTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className={`w-full justify-${isCollapsed ? 'center' : 'start'} relative`}
+                    className={`w-full justify-${isCollapsed ? 'center' : 'start'} relative
+                      ${!item.enabled && 'pointer-events-none'}`}
+                    onClick={() => item.enabled && onNavigate(item.path)}
                   >
                     <item.icon className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
                     {!isCollapsed && item.label}
@@ -191,24 +203,7 @@ function SidebarContent({ unreadNotifications, isCollapsed, onToggleCollapse }: 
             <TooltipTrigger asChild>
               <Button 
                 variant="ghost" 
-                className={`w-full justify-${isCollapsed ? 'center' : 'start'}`}
-              >
-                <Settings className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
-                {!isCollapsed && 'Settings'}
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && (
-              <TooltipContent side="right">
-                Settings
-              </TooltipContent>
-            )}
-          </Tooltip>
-
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-${isCollapsed ? 'center' : 'start'} `}
+                className={`w-full justify-${isCollapsed ? 'center' : 'start'} pointer-events-none`}
               >
                 <LogOut className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
                 {!isCollapsed && 'Logout'}

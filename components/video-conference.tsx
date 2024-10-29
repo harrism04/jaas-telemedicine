@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { VideoDemoControls } from "@/components/video-demo-controls"
+import { DemoControls } from "@/components/demo-controls"
 
 // Update these constants
 const JITSI_DOMAIN = '8x8.vc'  // Change to JaaS server
@@ -83,7 +83,7 @@ export function VideoConferenceComponent() {
   const appointmentId = searchParams.get('appointment')
   const role = searchParams.get('role') || 'doctor'
   const patientName = searchParams.get('patient') || 'Unknown Patient'
-  const ROOM_NAME = generateRoomName(appointmentId || 'demo')
+  const ROOM_NAME = appointmentId || 'demo'  // Simplified room name without APP_ID prefix
 
   // Get patient data based on the name
   const currentPatientData = getPatientData(patientName)
@@ -99,12 +99,13 @@ export function VideoConferenceComponent() {
       console.log('Role:', role);
       
       const options = {
-        roomName: ROOM_NAME,
+        roomName: `${JAAS_APP_ID}/${ROOM_NAME}`,  // Add APP_ID prefix here
         width: '100%',
         height: '100%',
         parentNode: jitsiContainerRef.current,
         jwt,
         configOverwrite: {
+          ...getJaaSFeatures(),
           // Basic settings
           prejoinPageEnabled: false,
           disableDeepLinking: true,
@@ -478,8 +479,9 @@ export function VideoConferenceComponent() {
 
         {/* Add demo controls for doctor view */}
         {role === 'doctor' && (
-          <VideoDemoControls 
+          <DemoControls 
             appointmentId={appointmentId}
+            mode="consultation"
             patientName={patientName}
             onLaunchPatientView={launchPatientView}
           />
@@ -502,4 +504,11 @@ export function VideoConferenceComponent() {
       </div>
     </div>
   )
+}
+
+// Add at the top of your component
+const getJaaSFeatures = () => {
+  if (typeof window === 'undefined') return {};
+  const savedFeatures = localStorage.getItem('jaasFeatures');
+  return savedFeatures ? JSON.parse(savedFeatures) : {};
 }

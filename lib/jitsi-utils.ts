@@ -131,7 +131,7 @@ export const generateJWT = (roomName: string, isDoctor: boolean): string => {
       aud: 'jitsi',
       iss: 'chat',
       sub: APP_ID,
-      room: roomName,
+      room: '*',
       exp: now + 7200,
       nbf: now - 5,
       context: {
@@ -152,7 +152,7 @@ export const generateJWT = (roomName: string, isDoctor: boolean): string => {
           'inbound-call': true
         },
         room: {
-          regex: false
+          regex: true
         }
       }
     }

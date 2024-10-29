@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Telehealth Demo with JaaS Integration
 
-## Getting Started
+A telehealth platform built with Next.js and JaaS (Jitsi as a Service) for video conferencing.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Real-time video consultations
+- Doctor and patient views
+- Waiting room functionality
+- Patient information display
+- Chat functionality (mock)
+- Responsive design
+
+## Prerequisites
+
+Before you begin, ensure you have:
+- Node.js 18+ installed
+- A JaaS account with:
+  - App ID
+  - Private Key
+- npm or yarn package manager
+
+## Environment Setup
+
+1. Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_JAAS_APP_ID=your-jaas-app-id
+JAAS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+your-private-key-content
+-----END PRIVATE KEY-----"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Make sure your private key is properly formatted with:
+- Correct BEGIN and END markers
+- Line breaks after every 64 characters
+- No extra spaces or characters
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docker Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+You can run this application using Docker:
 
-## Learn More
+1. Build the Docker image:
+```bash
+docker build -t telehealth-demo .
+```
 
-To learn more about Next.js, take a look at the following resources:
+2. Create a `.env.local` file with your JaaS credentials (see Environment Setup section)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Run the container:
+```bash
+docker run -p 3000:3000 --env-file .env.local telehealth-demo
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The application will be available at `http://localhost:3000`
 
-## Deploy on Vercel
+For development with Docker:
+```bash
+# Build and run with volume mounting for development
+docker run -p 3000:3000 --env-file .env.local -v $(pwd):/app telehealth-demo npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`
+
+## Usage
+
+1. Open the dashboard to see the list of appointments
+2. Click "Start Consultation" on any appointment
+3. Use the demo controls to:
+   - Open doctor view
+   - Launch patient view
+4. Test the video consultation features
+
+## Tech Stack
+
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- JaaS (8x8's Jitsi as a Service)
+- jsrsasign for JWT handling
+- Docker
+
+## Project Structure
+
+```
+├── app/                  # Next.js app router
+├── components/          # React components
+│   ├── ui/             # UI components
+│   └── ...             # Feature components
+├── lib/                # Utilities and helpers
+└── public/             # Static assets
+```
+
+## Contributing
+
+This is a demo project to showcase JaaS iFrame API capabilities, but suggestions and improvements are welcome. Feel free to:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## License
+
+[MIT License](LICENSE)
