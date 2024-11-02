@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build:
-      context: .
+      context: https://github.com/harrism04/jaas-telemedicine.git#main
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
